@@ -2012,3 +2012,119 @@ img { display: block; max-width: 100%; }
   box-shadow: var(--glow-sm);
 }
 
+/* ═══════════════════════════════════════════
+   ADD SONG MODAL & TRIGGER
+   ═══════════════════════════════════════════ */
+.btn-add-song-trigger {
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--purple-light);
+  background: rgba(var(--purple-mid-rgb), 0.12);
+  border: 1px solid rgba(var(--purple-mid-rgb), 0.25);
+  transition: var(--transition-normal);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-add-song-trigger:hover {
+  color: var(--white-soft);
+  background: var(--purple-mid);
+  box-shadow: var(--glow-md);
+  transform: scale(1.05);
+}
+
+.add-song-modal {
+  width: 560px;
+  max-width: 95vw;
+}
+
+.add-song-form {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.add-song-preview {
+  width: 150px;
+  height: 150px;
+  border-radius: var(--border-radius);
+  background: rgba(var(--purple-mid-rgb), 0.08);
+  border: 2px dashed rgba(var(--purple-mid-rgb), 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-text);
+  font-size: 48px;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  transition: var(--transition-normal);
+}
+
+.add-song-preview:hover {
+  border-color: var(--purple-mid);
+  box-shadow: var(--glow-sm);
+}
+
+.add-song-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.add-song-preview img.hidden {
+  display: none;
+}
+
+.add-song-fields {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.add-song-fields input {
+  margin-bottom: 0 !important;
+}
+
+.modal input[type="url"] {
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(var(--purple-mid-rgb), 0.2);
+  background: rgba(var(--purple-mid-rgb), 0.08);
+  color: var(--white-soft);
+  font-size: 15px;
+  outline: none;
+  transition: var(--transition-normal);
+}
+
+.modal input[type="url"]:focus {
+  border-color: var(--purple-mid);
+  box-shadow: var(--glow-sm);
+}
+
+.add-song-hint {
+  font-size: 12px;
+  color: var(--gray-text);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.add-song-hint a {
+  color: var(--purple-light);
+  text-decoration: underline;
+  transition: var(--transition-normal);
+}
+
+.add-song-hint a:hover {
+  color: var(--white-soft);
+  text-shadow: var(--glow-text);
+}
+
+

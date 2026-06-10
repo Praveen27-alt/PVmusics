@@ -119,6 +119,7 @@
       <!-- All Songs -->
       <div class="section-header">
         <h2>All Songs</h2>
+        <button class="btn-add-song-trigger" id="btn-add-song-trigger" title="Add Song">➕ Add Song</button>
       </div>
       <div class="song-grid" id="song-grid-home">
         <!-- JS renders song cards -->
@@ -309,6 +310,31 @@
   </div>
 </div>
 
+<!-- ═══════════ ADD SONG MODAL ═══════════ -->
+<div class="modal-overlay" id="modal-add-song">
+  <div class="modal add-song-modal">
+    <h3>➕ Add New Song</h3>
+    <div class="add-song-form">
+      <div class="add-song-preview" id="add-song-preview">
+        <span class="preview-placeholder">🎵</span>
+        <img src="" alt="Preview" id="add-song-preview-img" class="hidden">
+      </div>
+      <div class="add-song-fields">
+        <input type="text" id="input-song-title" placeholder="Song Title *" maxlength="100" required>
+        <input type="text" id="input-song-artist" placeholder="Artist Name" maxlength="100" value="PVmusic">
+        <input type="url" id="input-song-url" placeholder="Audio URL (mp3 link) *" required>
+        <input type="url" id="input-song-cover" placeholder="Cover Image URL (jpg/png link)">
+        <p class="add-song-hint">💡 Upload files to <a href="https://cloudinary.com" target="_blank" rel="noopener">Cloudinary</a> and paste the URLs here</p>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" id="btn-add-song-cancel">Cancel</button>
+      <button class="btn-modal-confirm" id="btn-add-song-confirm">Add Song</button>
+    </div>
+  </div>
+</div>
+
+
 <!-- ═══════════ CONTEXT MENU ═══════════ -->
 <div class="context-menu" id="context-menu">
   <div class="context-menu-item" id="ctx-add-queue">
@@ -323,6 +349,11 @@
   <div class="context-menu-divider"></div>
   <div id="ctx-playlist-submenu">
     <!-- JS adds playlist items here -->
+  </div>
+  <div class="context-menu-divider hidden" id="ctx-delete-divider"></div>
+  <div class="context-menu-item hidden" id="ctx-delete-song">
+    <span class="ctx-icon">🗑️</span>
+    <span style="color:#ff5252;">Delete Song</span>
   </div>
 </div>
 

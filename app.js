@@ -184,6 +184,17 @@ const dom = {
   btnModalCancel: $('#btn-modal-cancel'),
   btnModalConfirm: $('#btn-modal-confirm'),
   btnCreatePlaylist: $('#btn-create-playlist'),
+  
+  modalAddSong: $('#modal-add-song'),
+  btnAddSongTrigger: $('#btn-add-song-trigger'),
+  btnAddSongCancel: $('#btn-add-song-cancel'),
+  btnAddSongConfirm: $('#btn-add-song-confirm'),
+  inputSongTitle: $('#input-song-title'),
+  inputSongArtist: $('#input-song-artist'),
+  inputSongUrl: $('#input-song-url'),
+  inputSongCover: $('#input-song-cover'),
+  addSongPreviewImg: $('#add-song-preview-img'),
+  addSongPreviewPlaceholder: $('#add-song-preview .preview-placeholder'),
   // Context menu
   contextMenu: $('#context-menu'),
   ctxAddQueue: $('#ctx-add-queue'),
@@ -1044,9 +1055,23 @@ function showContextMenu(x, y, songId) {
     dom.ctxPlaylistSubmenu.appendChild(item);
   });
 
+  // Show/hide delete button for custom songs
+  const song = getSong(songId);
+  const deleteBtn = document.getElementById('ctx-delete-song');
+  const deleteDivider = document.getElementById('ctx-delete-divider');
+  if (deleteBtn && deleteDivider) {
+    if (song && song.custom) {
+      deleteBtn.classList.remove('hidden');
+      deleteDivider.classList.remove('hidden');
+    } else {
+      deleteBtn.classList.add('hidden');
+      deleteDivider.classList.add('hidden');
+    }
+  }
+
   // Position
   const menuWidth = 220;
-  const menuHeight = 200;
+  const menuHeight = (song && song.custom) ? 250 : 200;
   let left = x;
   let top = y;
   if (x + menuWidth > window.innerWidth) left = x - menuWidth;
@@ -1072,6 +1097,16 @@ dom.ctxLikeToggle.addEventListener('click', () => {
   if (state.contextSongId) toggleLike(state.contextSongId);
   hideContextMenu();
 });
+
+const ctxDeleteSong = document.getElementById('ctx-delete-song');
+if (ctxDeleteSong) {
+  ctxDeleteSong.addEventListener('click', () => {
+    if (state.contextSongId) {
+      deleteCustomSong(state.contextSongId);
+    }
+    hideContextMenu();
+  });
+}
 
 // ═══════════════════════════════════════════
 // PLAYLIST CREATION MODAL
@@ -1110,8 +1145,14 @@ dom.btnCreatePlaylist.addEventListener('click', openCreateModal);
 dom.btnModalCancel.addEventListener('click', closeCreateModal);
 dom.btnModalConfirm.addEventListener('click', createPlaylist);
 dom.inputPlaylistName.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') createPlaylist();
-  if (e.key === 'Escape') closeCreateModal();
+  if (e.key === 'Enter') {
+    e.stopPropagation();
+    createPlaylist();
+  }
+  if (e.key === 'Escape') {
+    e.stopPropagation();
+    closeCreateModal();
+  }
 });
 dom.modalCreate.addEventListener('click', (e) => {
   if (e.target === dom.modalCreate) closeCreateModal();
@@ -1332,12 +1373,201 @@ function setupProfile(session) {
 }
 
 // ═══════════════════════════════════════════
+// ADD SONG MODAL & DELETE CUSTOM SONG
+// ═══════════════════════════════════════════
+function openAddSongModal() {
+  dom.inputSongTitle.value = '';
+  dom.inputSongArtist.value = 'PVmusic';
+  dom.inputSongUrl.value = '';
+  dom.inputSongCover.value = '';
+  dom.addSongPreviewImg.src = '';
+  dom.addSongPreviewImg.classList.add('hidden');
+  dom.addSongPreviewPlaceholder.classList.remove('hidden');
+
+  dom.modalAddSong.classList.add('active');
+  setTimeout(() => dom.inputSongTitle.focus(), 100);
+}
+
+function closeAddSongModal() {
+  dom.modalAddSong.classList.remove('active');
+}
+
+if (dom.inputSongCover) {
+  dom.inputSongCover.addEventListener('input', (e) => {
+    const url = e.target.value.trim();
+    if (url) {
+      dom.addSongPreviewImg.src = url;
+      dom.addSongPreviewImg.classList.remove('hidden');
+      dom.addSongPreviewPlaceholder.classList.add('hidden');
+    } else {
+      dom.addSongPreviewImg.src = '';
+      dom.addSongPreviewImg.classList.add('hidden');
+      dom.addSongPreviewPlaceholder.classList.remove('hidden');
+    }
+  });
+
+  dom.addSongPreviewImg.addEventListener('error', () => {
+    dom.addSongPreviewImg.classList.add('hidden');
+    dom.addSongPreviewPlaceholder.classList.remove('hidden');
+  });
+}
+
+function addCustomSong() {
+  const title = dom.inputSongTitle.value.trim();
+  const artist = dom.inputSongArtist.value.trim() || 'PVmusic';
+  const url = dom.inputSongUrl.value.trim();
+  const coverUrl = dom.inputSongCover.value.trim() || 'https://res.cloudinary.com/dofcnmza8/image/upload/q_auto/f_auto/v1781117328/aura1010_ck6bs9.jpg';
+
+  if (!title) {
+    showToast('Please enter a song title');
+    return;
+  }
+  if (!url) {
+    showToast('Please enter an audio URL');
+    return;
+  }
+
+  const newSong = {
+    id: Date.now(),
+    title: title,
+    artist: artist,
+    src: url,
+    cover: coverUrl,
+    custom: true
+  };
+
+  SONGS.push(newSong);
+
+  const customSongs = JSON.parse(localStorage.getItem('pvmusic_custom_songs') || '[]');
+  customSongs.push(newSong);
+  localStorage.setItem('pvmusic_custom_songs', JSON.stringify(customSongs));
+
+  renderHomeSongGrid();
+  renderSearchResults(dom.searchInput.value || '');
+  if (state.currentView === 'library') renderLibrary();
+
+  closeAddSongModal();
+  showToast(`Added "${title}"`);
+}
+
+function deleteCustomSong(songId) {
+  const songIdx = SONGS.findIndex(s => s.id === songId);
+  if (songIdx === -1) return;
+
+  const song = SONGS[songIdx];
+  if (!song.custom) return;
+
+  SONGS.splice(songIdx, 1);
+
+  let customSongs = JSON.parse(localStorage.getItem('pvmusic_custom_songs') || '[]');
+  customSongs = customSongs.filter(s => s.id !== songId);
+  localStorage.setItem('pvmusic_custom_songs', JSON.stringify(customSongs));
+
+  state.likedSongs = state.likedSongs.filter(id => id !== songId);
+  saveLiked();
+
+  state.playlists.forEach(pl => {
+    pl.songs = pl.songs.filter(id => id !== songId);
+  });
+  savePlaylists();
+
+  state.queue = state.queue.filter(id => id !== songId);
+
+  if (state.currentSong && state.currentSong.id === songId) {
+    audio.pause();
+    state.isPlaying = false;
+    state.currentSong = null;
+    audio.src = '';
+    
+    dom.playerArtImg.src = '';
+    dom.playerSongTitle.textContent = 'Select a song';
+    dom.playerSongArtist.textContent = 'PVmusic';
+    dom.playerLikeBtn.textContent = '♡';
+    dom.playerLikeBtn.classList.remove('liked');
+    dom.progressFill.style.width = '0%';
+    dom.currentTime.textContent = '0:00';
+    dom.totalTime.textContent = '0:00';
+    document.title = 'PVmusic — Stream Your Vibe';
+    
+    const bgImg = document.getElementById('dynamic-bg-img');
+    if (bgImg) {
+      bgImg.classList.remove('active');
+      bgImg.src = '';
+    }
+  }
+
+  state.currentPlaylist = state.currentPlaylist.filter(id => id !== songId);
+  if (state.currentPlaylist.length > 0) {
+    state.currentIndex = Math.max(0, Math.min(state.currentIndex, state.currentPlaylist.length - 1));
+  } else {
+    state.currentIndex = 0;
+  }
+
+  renderHomeSongGrid();
+  renderSidebarPlaylists();
+  renderSearchResults(dom.searchInput.value || '');
+  if (state.currentView === 'liked') renderLikedSongs();
+  if (state.currentView === 'playlist') renderPlaylistDetail();
+  if (state.currentView === 'library') renderLibrary();
+  renderQueue();
+
+  showToast(`Deleted "${song.title}"`);
+}
+
+// Bind Add Song Modal Event Listeners
+if (dom.btnAddSongTrigger) {
+  dom.btnAddSongTrigger.addEventListener('click', openAddSongModal);
+}
+if (dom.btnAddSongCancel) {
+  dom.btnAddSongCancel.addEventListener('click', closeAddSongModal);
+}
+if (dom.btnAddSongConfirm) {
+  dom.btnAddSongConfirm.addEventListener('click', addCustomSong);
+}
+if (dom.modalAddSong) {
+  dom.modalAddSong.addEventListener('click', (e) => {
+    if (e.target === dom.modalAddSong) closeAddSongModal();
+  });
+}
+
+// Escape and Enter key listeners for form fields
+[dom.inputSongTitle, dom.inputSongArtist, dom.inputSongUrl, dom.inputSongCover].forEach(input => {
+  if (input) {
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.stopPropagation();
+        addCustomSong();
+      }
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        closeAddSongModal();
+      }
+    });
+  }
+});
+
+// Load Custom Songs from LocalStorage
+function loadCustomSongs() {
+  try {
+    const custom = JSON.parse(localStorage.getItem('pvmusic_custom_songs') || '[]');
+    custom.forEach(song => {
+      if (!SONGS.some(s => s.id === song.id)) {
+        SONGS.push(song);
+      }
+    });
+  } catch (e) {
+    console.error('Error loading custom songs:', e);
+  }
+}
+
+// ═══════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════
 function init() {
   const session = checkAuth();
   if (!session) return;
 
+  loadCustomSongs();
   setGreeting();
   createParticles();
   renderHomeSongGrid();
@@ -1350,7 +1580,7 @@ function init() {
   // Set initial volume UI
   dom.volumeFill.style.width = (state.volume * 100) + '%';
 
-  console.log('🎵 PVmusic initialized — 11 tracks loaded');
+  console.log(`🎵 PVmusic initialized — ${SONGS.length} tracks loaded`);
 }
 
 init();
