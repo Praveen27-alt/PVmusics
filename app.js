@@ -1270,9 +1270,64 @@ if ('mediaSession' in navigator) {
 }
 
 // ═══════════════════════════════════════════
+// AUTH CHECK & PROFILE
+// ═══════════════════════════════════════════
+function checkAuth() {
+  const session = JSON.parse(localStorage.getItem('pvmusic_session') || 'null');
+  if (!session || !session.loggedIn) {
+    window.location.href = 'login.html';
+    return false;
+  }
+  return session;
+}
+
+function setupProfile(session) {
+  const profileBtn = $('#top-bar-profile');
+  const dropdown = $('#profile-dropdown');
+  const profileName = $('#profile-name');
+  const profileEmail = $('#profile-email');
+  const profileAvatarSm = $('#top-bar-profile');
+  const profileAvatarLg = $('#profile-avatar-lg');
+  const btnLogout = $('#btn-logout');
+
+  if (session) {
+    const initial = (session.name || session.username || 'U').charAt(0).toUpperCase();
+    profileAvatarSm.textContent = initial;
+    profileAvatarLg.textContent = initial;
+    profileName.textContent = session.name || session.username || 'User';
+    profileEmail.textContent = session.email || '';
+  }
+
+  // Toggle dropdown
+  profileBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle('active');
+  });
+
+  // Close dropdown on outside click
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#profile-wrapper')) {
+      dropdown.classList.remove('active');
+    }
+  });
+
+  // Logout
+  btnLogout.addEventListener('click', () => {
+    localStorage.removeItem('pvmusic_session');
+    showToast('Logged out');
+    setTimeout(() => {
+      window.location.href = 'login.html';
+    }, 500);
+  });
+}
+
+// ═══════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════
 function init() {
+  const session = checkAuth();
+  if (!session) return;
+
   setGreeting();
   createParticles();
   renderHomeSongGrid();
@@ -1280,6 +1335,7 @@ function init() {
   renderSidebarPlaylists();
   renderSearchResults('');
   updateVolumeIcon();
+  setupProfile(session);
 
   // Set initial volume UI
   dom.volumeFill.style.width = (state.volume * 100) + '%';
