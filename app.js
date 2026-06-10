@@ -739,6 +739,16 @@ function updatePlayerUI() {
   dom.playerSongArtist.textContent = song.artist;
   dom.playerAlbumArt.classList.toggle('playing', state.isPlaying);
 
+  // Dynamic blurred background
+  const bgImg = document.getElementById('dynamic-bg-img');
+  if (bgImg && bgImg.src !== song.cover) {
+    bgImg.classList.remove('active');
+    setTimeout(() => {
+      bgImg.src = song.cover;
+      bgImg.onload = () => bgImg.classList.add('active');
+    }, 150);
+  }
+
   // Play/pause button
   dom.btnPlayPause.textContent = state.isPlaying ? '⏸' : '▶';
   dom.btnPlayPause.title = state.isPlaying ? 'Pause' : 'Play';
