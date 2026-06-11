@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="PVmusic — Your premium music streaming experience with a vibrant purple aesthetic.">
+  <title>PVmusic — Stream Your Vibe</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
+</head>
+<body>
+
+<div class="app-container" id="app">
+
+  <!-- Dynamic Blurred Background -->
+  <div class="dynamic-bg" id="dynamic-bg">
+    <img src="" alt="" id="dynamic-bg-img">
+    <div class="dynamic-bg-overlay"></div>
+  </div>
+
+  <!-- ═══════════ SIDEBAR ═══════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🎵</div>
+      <span class="logo-text">PVmusic</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-item active" data-view="home" id="nav-home">
+        <span class="nav-icon">🏠</span>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" data-view="search" id="nav-search">
+        <span class="nav-icon">🔍</span>
+        <span>Search</span>
+      </div>
+      <div class="nav-item" data-view="library" id="nav-library">
+        <span class="nav-icon">📚</span>
+        <span>Your Library</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-library">
+      <div class="library-header">
+        <h3>Playlists</h3>
+        <button class="btn-create-playlist" id="btn-create-playlist" title="Create Playlist">+</button>
+      </div>
+
+      <div id="sidebar-playlist-list">
+        <div class="playlist-item" data-view="liked" id="nav-liked">
+          <div class="playlist-icon liked-icon">❤️</div>
+          <div class="playlist-item-info">
+            <div class="name">Liked Songs</div>
+            <div class="meta" id="liked-count-sidebar">0 songs</div>
+          </div>
+        </div>
+        <!-- Dynamic playlists render here -->
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════ MAIN CONTENT ═══════════ -->
+  <main class="main-content" id="main-content">
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <div class="nav-arrows">
+        <button id="btn-back" title="Go back">◀</button>
+        <button id="btn-forward" title="Go forward">▶</button>
+      </div>
+
+      <div class="search-container">
+        <input type="text" class="search-input" id="search-input" placeholder="Search songs..." autocomplete="off">
+        <span class="search-icon">🔍</span>
+      </div>
+
+      <div class="profile-wrapper" id="profile-wrapper">
+        <div class="top-bar-profile" id="top-bar-profile" title="Profile">P</div>
+        <div class="profile-dropdown" id="profile-dropdown">
+          <div class="profile-dropdown-header">
+            <div class="profile-avatar-lg" id="profile-avatar-lg">P</div>
+            <div class="profile-info">
+              <div class="profile-name" id="profile-name">User</div>
+              <div class="profile-email" id="profile-email">user@pvmusic.com</div>
+            </div>
+          </div>
+          <div class="profile-dropdown-divider"></div>
+          <button class="profile-dropdown-item" id="btn-logout">
+            <span>🚪</span>
+            <span>Log Out</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── HOME VIEW ── -->
+    <div class="content-view active" id="view-home">
+      <!-- Hero -->
+      <div class="hero-banner" id="hero-banner">
+        <div class="hero-overlay"></div>
+        <div class="hero-particles" id="hero-particles"></div>
+        <div class="hero-content">
+          <p class="greeting" id="greeting-text">Good Evening</p>
+          <h1>Feel the Vibe 🎶</h1>
+          <p>Your personal collection. 11 tracks, endless vibes.</p>
+        </div>
+      </div>
+
+      <!-- Quick Play -->
+      <div class="section-header">
+        <h2>Quick Play</h2>
+      </div>
+      <div class="quick-play-grid" id="quick-play-grid">
+        <!-- JS renders quick play cards -->
+      </div>
+
+      <!-- All Songs -->
+      <div class="section-header">
+        <h2>All Songs</h2>
+        <button class="btn-add-song-trigger" id="btn-add-song-trigger" title="Add Song">➕ Add Song</button>
+      </div>
+      <div class="song-grid" id="song-grid-home">
+        <!-- JS renders song cards -->
+      </div>
+    </div>
+
+    <!-- ── SEARCH VIEW ── -->
+    <div class="content-view" id="view-search">
+      <h2 style="font-family:'Outfit',sans-serif; font-size:28px; font-weight:700; margin-bottom:24px;">Search Results</h2>
+      <div class="search-results-info" id="search-results-info"></div>
+      <div class="song-grid" id="song-grid-search">
+        <!-- JS renders results -->
+      </div>
+      <div class="no-results hidden" id="no-results">
+        <div class="no-results-icon">🔍</div>
+        <h3>No songs found</h3>
+        <p>Try a different search term</p>
+      </div>
+    </div>
+
+    <!-- ── LIKED SONGS VIEW ── -->
+    <div class="content-view" id="view-liked">
+      <div class="liked-header">
+        <div class="liked-header-icon">❤️</div>
+        <div class="liked-header-info">
+          <div class="label">Playlist</div>
+          <h2>Liked Songs</h2>
+          <div class="count" id="liked-count-header">0 songs</div>
+        </div>
+      </div>
+
+      <div class="playlist-actions">
+        <button class="btn-play-all" id="btn-play-liked">▶ Play All</button>
+        <button class="btn-shuffle-all" id="btn-shuffle-liked">🔀 Shuffle</button>
+      </div>
+
+      <div class="song-list" id="liked-song-list">
+        <div class="song-list-header">
+          <span>#</span>
+          <span>Title</span>
+          <span>Artist</span>
+          <span>Duration</span>
+          <span></span>
+        </div>
+        <!-- JS renders liked songs -->
+      </div>
+
+      <div class="empty-state hidden" id="liked-empty">
+        <div class="empty-icon">💜</div>
+        <h3>No liked songs yet</h3>
+        <p>Tap the heart icon on any song to add it here.</p>
+      </div>
+    </div>
+
+    <!-- ── PLAYLIST DETAIL VIEW ── -->
+    <div class="content-view" id="view-playlist">
+      <div class="playlist-header">
+        <div class="playlist-header-icon">🎶</div>
+        <div class="playlist-header-info">
+          <div class="label">Playlist</div>
+          <h2 id="playlist-detail-name">My Playlist</h2>
+          <div class="count" id="playlist-detail-count">0 songs</div>
+        </div>
+      </div>
+
+      <div class="playlist-actions">
+        <button class="btn-play-all" id="btn-play-playlist">▶ Play All</button>
+        <button class="btn-shuffle-all" id="btn-shuffle-playlist">🔀 Shuffle</button>
+        <button class="btn-delete-playlist" id="btn-delete-playlist">🗑️ Delete Playlist</button>
+      </div>
+
+      <div class="song-list" id="playlist-song-list">
+        <div class="song-list-header">
+          <span>#</span>
+          <span>Title</span>
+          <span>Artist</span>
+          <span>Duration</span>
+          <span></span>
+        </div>
+        <!-- JS renders playlist songs -->
+      </div>
+
+      <div class="empty-state hidden" id="playlist-empty">
+        <div class="empty-icon">🎵</div>
+        <h3>This playlist is empty</h3>
+        <p>Right-click any song and add it here.</p>
+      </div>
+    </div>
+
+    <!-- ── LIBRARY VIEW ── -->
+    <div class="content-view" id="view-library">
+      <h2 style="font-family:'Outfit',sans-serif; font-size:28px; font-weight:700; margin-bottom:24px;">Your Library</h2>
+      <div class="song-grid" id="library-grid">
+        <!-- Liked songs card + playlist cards -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ═══════════ QUEUE PANEL ═══════════ -->
+  <div class="queue-panel" id="queue-panel">
+    <div class="queue-panel-header">
+      <h3>Queue</h3>
+      <button class="btn-close-queue" id="btn-close-queue">✕</button>
+    </div>
+    <div class="queue-now-playing" id="queue-now-playing">
+      <div class="queue-section-label">Now Playing</div>
+      <!-- JS renders current -->
+    </div>
+    <div class="queue-list" id="queue-list">
+      <div class="queue-section-label">Next Up</div>
+      <!-- JS renders queue -->
+    </div>
+  </div>
+
+  <!-- ═══════════ BOTTOM PLAYER BAR ═══════════ -->
+  <div class="player-bar" id="player-bar">
+
+    <!-- Left: Now Playing -->
+    <div class="player-now-playing" id="player-now-playing">
+      <div class="player-album-art" id="player-album-art">
+        <img src="" alt="Album Art" id="player-art-img">
+      </div>
+      <div class="player-song-info">
+        <div class="player-song-title" id="player-song-title">Select a song</div>
+        <div class="player-song-artist" id="player-song-artist">PVmusic</div>
+      </div>
+      <button class="player-like-btn" id="player-like-btn" title="Like">♡</button>
+    </div>
+
+    <!-- Center: Controls -->
+    <div class="player-controls">
+      <div class="player-buttons">
+        <button class="player-btn" id="btn-shuffle" title="Shuffle">🔀</button>
+        <button class="player-btn" id="btn-prev" title="Previous">⏮</button>
+        <button class="player-btn player-btn-main" id="btn-play-pause" title="Play">▶</button>
+        <button class="player-btn" id="btn-next" title="Next">⏭</button>
+        <button class="player-btn" id="btn-repeat" title="Repeat">🔁</button>
+      </div>
+      <div class="player-progress">
+        <span class="player-time" id="player-current-time">0:00</span>
+        <div class="progress-bar-container" id="progress-bar">
+          <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+        </div>
+        <span class="player-time" id="player-total-time">0:00</span>
+      </div>
+    </div>
+
+    <!-- Right: Extra Controls -->
+    <div class="player-extra">
+      <button class="player-extra-btn" id="btn-queue-toggle" title="Queue">☰</button>
+      <div class="volume-control">
+        <button class="player-extra-btn" id="btn-volume" title="Volume">🔊</button>
+        <div class="volume-slider-container" id="volume-slider">
+          <div class="volume-slider-fill" id="volume-fill" style="width:80%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ MOBILE BOTTOM NAV ═══════════ -->
+  <div class="mobile-nav" id="mobile-nav">
+    <div class="mobile-nav-item active" data-view="home">
+      <span class="mobile-nav-icon">🏠</span>
+      <span>Home</span>
+    </div>
+    <div class="mobile-nav-item" data-view="search">
+      <span class="mobile-nav-icon">🔍</span>
+      <span>Search</span>
+    </div>
+    <div class="mobile-nav-item" data-view="library">
+      <span class="mobile-nav-icon">📚</span>
+      <span>Library</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════ CREATE PLAYLIST MODAL ═══════════ -->
+<div class="modal-overlay" id="modal-create-playlist">
+  <div class="modal">
+    <h3>Create Playlist</h3>
+    <input type="text" id="input-playlist-name" placeholder="My awesome playlist..." maxlength="50" autofocus>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" id="btn-modal-cancel">Cancel</button>
+      <button class="btn-modal-confirm" id="btn-modal-confirm">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ ADD SONG MODAL ═══════════ -->
+<div class="modal-overlay" id="modal-add-song">
+  <div class="modal add-song-modal">
+    <h3>➕ Add New Song</h3>
+    <div class="add-song-form">
+      <div class="add-song-preview" id="add-song-preview">
+        <span class="preview-placeholder">🎵</span>
+        <img src="" alt="Preview" id="add-song-preview-img" class="hidden">
+      </div>
+      <div class="add-song-fields">
+        <input type="text" id="input-song-title" placeholder="Song Title *" maxlength="100" required>
+        <input type="text" id="input-song-artist" placeholder="Artist Name" maxlength="100" value="PVmusic">
+        <input type="url" id="input-song-url" placeholder="Audio URL (mp3 link) *" required>
+        <input type="url" id="input-song-cover" placeholder="Cover Image URL (jpg/png link)">
+        <p class="add-song-hint">💡 Upload files to <a href="https://cloudinary.com" target="_blank" rel="noopener">Cloudinary</a> and paste the URLs here</p>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" id="btn-add-song-cancel">Cancel</button>
+      <button class="btn-modal-confirm" id="btn-add-song-confirm">Add Song</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════ CONTEXT MENU ═══════════ -->
+<div class="context-menu" id="context-menu">
+  <div class="context-menu-item" id="ctx-add-queue">
+    <span class="ctx-icon">📋</span>
+    <span>Add to Queue</span>
+  </div>
+  <div class="context-menu-divider"></div>
+  <div class="context-menu-item" id="ctx-like-toggle">
+    <span class="ctx-icon">❤️</span>
+    <span id="ctx-like-text">Like</span>
+  </div>
+  <div class="context-menu-divider"></div>
+  <div id="ctx-playlist-submenu">
+    <!-- JS adds playlist items here -->
+  </div>
+  <div class="context-menu-divider hidden" id="ctx-delete-divider"></div>
+  <div class="context-menu-item hidden" id="ctx-delete-song">
+    <span class="ctx-icon">🗑️</span>
+    <span style="color:#ff5252;">Delete Song</span>
+  </div>
+</div>
+
+<!-- ═══════════ TOAST CONTAINER ═══════════ -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- ═══════════ FULL SCREEN NOW PLAYING ═══════════ -->
+<div class="now-playing-screen" id="now-playing-screen">
+  <!-- Blurred background art -->
+  <div class="nps-bg" id="nps-bg"></div>
+  <div class="nps-overlay"></div>
+
+  <!-- Top bar -->
+  <div class="nps-topbar">
+    <button class="nps-btn-close" id="nps-btn-close" title="Minimize">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M19 15l-7 7-7-7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <div class="nps-header-label">Now Playing</div>
+    <button class="nps-btn-options" id="nps-btn-options" title="Options">•••</button>
+  </div>
+
+  <!-- Album art (large) -->
+  <div class="nps-artwork-wrap">
+    <div class="nps-artwork" id="nps-artwork">
+      <img src="" alt="Album Art" id="nps-art-img">
+      <div class="nps-artwork-glow" id="nps-artwork-glow"></div>
+    </div>
+  </div>
+
+  <!-- Song info + like -->
+  <div class="nps-info-row">
+    <div class="nps-song-info">
+      <div class="nps-title" id="nps-title">Select a song</div>
+      <div class="nps-artist" id="nps-artist">PVmusic</div>
+    </div>
+    <button class="nps-like-btn" id="nps-like-btn" title="Like">♡</button>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="nps-progress-section">
+    <div class="nps-progress-bar" id="nps-progress-bar">
+      <div class="nps-progress-fill" id="nps-progress-fill"></div>
+      <div class="nps-progress-thumb" id="nps-progress-thumb"></div>
+    </div>
+    <div class="nps-times">
+      <span id="nps-current-time">0:00</span>
+      <span id="nps-total-time">0:00</span>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="nps-controls">
+    <button class="nps-ctrl-btn" id="nps-btn-shuffle" title="Shuffle">🔀</button>
+    <button class="nps-ctrl-btn nps-ctrl-prev" id="nps-btn-prev" title="Previous">⏮</button>
+    <button class="nps-ctrl-btn nps-ctrl-play" id="nps-btn-play-pause" title="Play">▶</button>
+    <button class="nps-ctrl-btn nps-ctrl-next" id="nps-btn-next" title="Next">⏭</button>
+    <button class="nps-ctrl-btn" id="nps-btn-repeat" title="Repeat">🔁</button>
+  </div>
+
+  <!-- Volume + extra -->
+  <div class="nps-bottom-row">
+    <button class="nps-extra-btn" id="nps-btn-volume-icon" title="Volume">🔊</button>
+    <div class="nps-vol-bar" id="nps-vol-bar">
+      <div class="nps-vol-fill" id="nps-vol-fill"></div>
+    </div>
+    <button class="nps-extra-btn" id="nps-btn-queue" title="Queue">☰</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
