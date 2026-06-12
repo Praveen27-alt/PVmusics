@@ -80,6 +80,41 @@ const SONGS = [
     artist: "PVmusic",
     src: "https://res.cloudinary.com/dofcnmza8/video/upload/q_auto/f_auto/v1781088304/Naanga_Naalu_Peru_j1t0j1.mp3",
     cover: "https://res.cloudinary.com/dofcnmza8/image/upload/q_auto/f_auto/v1781117328/nalluparu_zjbu2e.jpg"
+  },
+  {
+    id: 12,
+    title: "Minnalvala",
+    artist: "PVmusic",
+    src: "https://res.cloudinary.com/dofcnmza8/video/upload/q_auto/f_auto/v1781275961/Minnalvala_kp1vam.mp3",
+    cover: "https://res.cloudinary.com/dofcnmza8/image/upload/q_auto/f_auto/v1781276357/minnalvala_abnart.jpg"
+  },
+  {
+    id: 13,
+    title: "Pavazha Malli",
+    artist: "PVmusic",
+    src: "https://res.cloudinary.com/dofcnmza8/video/upload/q_auto/f_auto/v1781275972/Pavazha_Malli_tu5wga.mp3",
+    cover: "https://res.cloudinary.com/dofcnmza8/image/upload/q_auto/f_auto/v1781276372/pavazha_malli_ldlys2.jpg"
+  },
+  {
+    id: 14,
+    title: "Kanne Kanmaniye",
+    artist: "PVmusic",
+    src: "https://res.cloudinary.com/dofcnmza8/video/upload/q_auto/f_auto/v1781275991/Kannae_Kanmaniye_ztz6th.mp3",
+    cover: "https://res.cloudinary.com/dofcnmza8/image/upload/q_auto/f_auto/v1781276347/kanne_kanmaniye_caulrw.jpg"
+  },
+  {
+    id: 15,
+    title: "Aaya Sher",
+    artist: "PVmusic",
+    src: "https://res.cloudinary.com/dofcnmza8/video/upload/q_auto/f_auto/v1781275980/Aaya_Sher_y13jmu.mp3",
+    cover: "https://res.cloudinary.com/dofcnmza8/image/upload/q_auto/f_auto/v1781276335/aayasher_ynnhey.jpg"
+  },
+  {
+    id: 16,
+    title: "Dil Kaa Jo Haal Hai",
+    artist: "Besharam",
+    src: "https://res.cloudinary.com/dofcnmza8/video/upload/q_auto/f_auto/v1781124774/Dil_Kaa_Jo_Haal_Hai_Besharam_320_Kbps_delwvm.mp3",
+    cover: "https://res.cloudinary.com/dofcnmza8/image/upload/q_auto/f_auto/v1781276347/kanne_kanmaniye_caulrw.jpg"
   }
 ];
 
@@ -353,19 +388,17 @@ function renderSongCard(song) {
     <div class="song-card-artist">${song.artist}</div>
   `;
 
-  // Play on card click (whole card except like/play btn)
+  // Clicking anywhere on card (except like/play buttons) → plays song AND opens full-screen
   card.addEventListener('click', (e) => {
     if (e.target.closest('.song-card-like') || e.target.closest('.song-card-play')) return;
     playSong(song.id);
-    // If click was on the album art, open Now Playing screen
-    if (e.target.closest('.song-card-art-wrap')) {
-      setTimeout(() => {
-        if (window._openNowPlayingScreen) window._openNowPlayingScreen();
-      }, 120);
-    }
+    // Open full-screen Now Playing for any card click
+    setTimeout(() => {
+      if (window._openNowPlayingScreen) window._openNowPlayingScreen();
+    }, 100);
   });
 
-  // Play button
+  // Play button — plays but does NOT open full screen
   card.querySelector('.song-card-play').addEventListener('click', (e) => {
     e.stopPropagation();
     playSong(song.id);
@@ -384,7 +417,6 @@ function renderSongCard(song) {
   });
 
   return card;
-
 }
 
 function renderHomeSongGrid() {
@@ -1599,22 +1631,21 @@ init();
 // FULL-SCREEN NOW PLAYING SCREEN
 // ═══════════════════════════════════════════
 function initNowPlayingScreen() {
-  const screen     = document.getElementById('now-playing-screen');
-  const npsArtwork = document.getElementById('nps-artwork');
-  const npsArtImg  = document.getElementById('nps-art-img');
-  const npsBg      = document.getElementById('nps-bg');
-  const npsTitle   = document.getElementById('nps-title');
-  const npsArtist  = document.getElementById('nps-artist');
-  const npsLikeBtn = document.getElementById('nps-like-btn');
-  const npsCurrent = document.getElementById('nps-current-time');
-  const npsTotal   = document.getElementById('nps-total-time');
+  const screen          = document.getElementById('now-playing-screen');
+  const npsArtwork      = document.getElementById('nps-artwork');
+  const npsArtImg       = document.getElementById('nps-art-img');
+  const npsBg           = document.getElementById('nps-bg');
+  const npsTitle        = document.getElementById('nps-title');
+  const npsArtist       = document.getElementById('nps-artist');
+  const npsLikeBtn      = document.getElementById('nps-like-btn');
+  const npsCurrent      = document.getElementById('nps-current-time');
+  const npsTotal        = document.getElementById('nps-total-time');
   const npsProgressBar  = document.getElementById('nps-progress-bar');
   const npsProgressFill = document.getElementById('nps-progress-fill');
   const npsProgressThumb= document.getElementById('nps-progress-thumb');
-  const npsVolBar  = document.getElementById('nps-vol-bar');
-  const npsVolFill = document.getElementById('nps-vol-fill');
+  const npsVolBar       = document.getElementById('nps-vol-bar');
+  const npsVolFill      = document.getElementById('nps-vol-fill');
 
-  // Control buttons in Now Playing Screen
   const npsBtnClose   = document.getElementById('nps-btn-close');
   const npsBtnPlay    = document.getElementById('nps-btn-play-pause');
   const npsBtnPrev    = document.getElementById('nps-btn-prev');
@@ -1640,62 +1671,63 @@ function initNowPlayingScreen() {
     document.body.style.overflow = '';
   }
 
+  // Expose globally so renderSongCard can call it
+  window._openNowPlayingScreen = openNPS;
+
+  // Close button
   npsBtnClose.addEventListener('click', closeNPS);
 
-  // Open when clicking on the player album art in the bottom bar
+  // Click on bottom player album art → open NPS
+  dom.playerAlbumArt.style.cursor = 'pointer';
+  dom.playerArtImg.style.cursor   = 'pointer';
   dom.playerAlbumArt.addEventListener('click', () => {
     if (state.currentSong) openNPS();
   });
-  dom.playerArtImg.style.cursor = 'pointer';
-  dom.playerAlbumArt.style.cursor = 'pointer';
 
-  // ── Sync UI with state ────────────────────
+  // ── Sync all NPS UI from state ────────────
   function updateNPSUI() {
     if (!state.currentSong) return;
     const song = state.currentSong;
 
-    // Background
     npsBg.style.backgroundImage = `url('${song.cover}')`;
-
-    // Art
-    npsArtImg.src = song.cover;
-    npsArtImg.alt = song.title;
-
-    // Title / artist
+    npsArtImg.src   = song.cover;
+    npsArtImg.alt   = song.title;
     npsTitle.textContent  = song.title;
     npsArtist.textContent = song.artist;
 
-    // Play / pause state
     npsBtnPlay.textContent = state.isPlaying ? '⏸' : '▶';
     npsArtwork.classList.toggle('playing', state.isPlaying);
 
-    // Like state
     const liked = isLiked(song.id);
     npsLikeBtn.textContent = liked ? '❤️' : '♡';
     npsLikeBtn.classList.toggle('liked', liked);
 
-    // Shuffle / repeat state
     npsBtnShuffle.classList.toggle('active', state.shuffle);
     npsBtnRepeat.classList.toggle('active', state.repeat !== 'off');
     npsBtnRepeat.textContent = state.repeat === 'one' ? '🔂' : '🔁';
 
-    // Volume
     npsVolFill.style.width = (state.volume * 100) + '%';
     updateNpsVolumeIcon();
+
+    if (audio.duration) {
+      npsTotal.textContent = formatTime(audio.duration);
+      const pct = (audio.currentTime / audio.duration) * 100;
+      npsProgressFill.style.width = pct + '%';
+      npsCurrent.textContent = formatTime(audio.currentTime);
+    }
   }
 
   function updateNpsVolumeIcon() {
-    if (state.isMuted || state.volume === 0) npsBtnVolIcon.textContent = '🔇';
-    else if (state.volume < 0.5)             npsBtnVolIcon.textContent = '🔉';
-    else                                     npsBtnVolIcon.textContent = '🔊';
+    if (state.isMuted || state.volume === 0)  npsBtnVolIcon.textContent = '🔇';
+    else if (state.volume < 0.5)              npsBtnVolIcon.textContent = '🔉';
+    else                                      npsBtnVolIcon.textContent = '🔊';
   }
 
-  // ── Progress sync ────────────────────────
+  // ── Progress sync ─────────────────────────
   audio.addEventListener('timeupdate', () => {
     if (!isNpsOpen || !audio.duration) return;
     const pct = (audio.currentTime / audio.duration) * 100;
     npsProgressFill.style.width = pct + '%';
-    npsProgressThumb.style.right = (100 - pct) + '%';
     npsCurrent.textContent = formatTime(audio.currentTime);
   });
 
@@ -1704,28 +1736,27 @@ function initNowPlayingScreen() {
     npsTotal.textContent = formatTime(audio.duration);
   });
 
-  // ── Progress click / drag ─────────────────
+  // ── Progress drag ─────────────────────────
   let draggingNps = false;
 
   function setNpsProgress(e) {
     if (!audio.duration) return;
     const rect = npsProgressBar.getBoundingClientRect();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    let pct = (clientX - rect.left) / rect.width;
-    pct = Math.max(0, Math.min(1, pct));
+    let pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
     audio.currentTime = pct * audio.duration;
     npsProgressFill.style.width = (pct * 100) + '%';
   }
 
   npsProgressBar.addEventListener('click', setNpsProgress);
-  npsProgressBar.addEventListener('mousedown', (e) => { draggingNps = true; setNpsProgress(e); });
+  npsProgressBar.addEventListener('mousedown',  (e) => { draggingNps = true; setNpsProgress(e); });
   npsProgressBar.addEventListener('touchstart', (e) => { draggingNps = true; setNpsProgress(e); }, { passive: true });
   document.addEventListener('mousemove', (e) => { if (draggingNps) setNpsProgress(e); });
   document.addEventListener('touchmove', (e) => { if (draggingNps) setNpsProgress(e); }, { passive: true });
   document.addEventListener('mouseup',  () => { draggingNps = false; });
   document.addEventListener('touchend', () => { draggingNps = false; });
 
-  // ── Volume click / drag ───────────────────
+  // ── Volume drag ───────────────────────────
   let draggingVol = false;
 
   function setNpsVolume(e) {
@@ -1738,7 +1769,7 @@ function initNowPlayingScreen() {
   }
 
   npsVolBar.addEventListener('click', setNpsVolume);
-  npsVolBar.addEventListener('mousedown', (e) => { draggingVol = true; setNpsVolume(e); });
+  npsVolBar.addEventListener('mousedown',  (e) => { draggingVol = true; setNpsVolume(e); });
   npsVolBar.addEventListener('touchstart', (e) => { draggingVol = true; setNpsVolume(e); }, { passive: true });
   document.addEventListener('mousemove', (e) => { if (draggingVol) setNpsVolume(e); });
   document.addEventListener('touchmove', (e) => { if (draggingVol) setNpsVolume(e); }, { passive: true });
@@ -1759,7 +1790,7 @@ function initNowPlayingScreen() {
     updateNpsVolumeIcon();
   });
 
-  // ── Control buttons ───────────────────────
+  // ── Playback controls ─────────────────────
   npsBtnPlay.addEventListener('click', () => {
     togglePlayPause();
     npsBtnPlay.textContent = state.isPlaying ? '⏸' : '▶';
@@ -1795,7 +1826,7 @@ function initNowPlayingScreen() {
     dom.btnQueueToggle.classList.add('active');
   });
 
-  // ── Swipe-down to close ────────────────────
+  // ── Swipe-down to close (mobile) ──────────
   let touchStartY = 0;
   screen.addEventListener('touchstart', (e) => {
     touchStartY = e.touches[0].clientY;
@@ -1803,39 +1834,10 @@ function initNowPlayingScreen() {
 
   screen.addEventListener('touchend', (e) => {
     const delta = e.changedTouches[0].clientY - touchStartY;
-    if (delta > 100) closeNPS(); // swipe down > 100px = close
+    if (delta > 80) closeNPS();
   }, { passive: true });
 
-  // ── Song card click listener ───────────────
-  // Attach click on the cover image area to open NPS
-  document.addEventListener('click', (e) => {
-    const card = e.target.closest('.song-card');
-    if (card) {
-      const img = card.querySelector('.song-card-img');
-      // If click is directly on the image area, open NPS too
-      if (e.target === img || e.target.closest('.song-card-art-wrap')) {
-        // Small delay so playSong has time to set state
-        setTimeout(openNPS, 120);
-      }
-    }
-  });
-
-  // Also: clicking anywhere in the player album art opens NPS
-  // Already wired above. Mirror update when song changes externally:
-  const origUpdatePlayerUI = updatePlayerUI;
-  // Patch updatePlayerUI to also refresh NPS if open
-  const _origUpdatePlayerUI = updatePlayerUI;
-
-  // Hook: whenever updatePlayerUI is called, also refresh NPS
-  const npsRefreshOnUpdate = () => {
-    if (isNpsOpen) updateNPSUI();
-  };
-
-  audio.addEventListener('play',  npsRefreshOnUpdate);
-  audio.addEventListener('pause', npsRefreshOnUpdate);
-
-  // Expose open for song cards
-  window._openNowPlayingScreen = openNPS;
+  // ── Refresh NPS when song changes ─────────
+  audio.addEventListener('play',  () => { if (isNpsOpen) updateNPSUI(); });
+  audio.addEventListener('pause', () => { if (isNpsOpen) updateNPSUI(); });
 }
-
-
