@@ -108,13 +108,6 @@ const SONGS = [
     artist: "PVmusic",
     src: "https://res.cloudinary.com/dofcnmza8/video/upload/q_auto/f_auto/v1781275980/Aaya_Sher_y13jmu.mp3",
     cover: "https://res.cloudinary.com/dofcnmza8/image/upload/q_auto/f_auto/v1781276335/aayasher_ynnhey.jpg"
-  },
-  {
-    id: 16,
-    title: "Dil Kaa Jo Haal Hai",
-    artist: "Besharam",
-    src: "https://res.cloudinary.com/dofcnmza8/video/upload/q_auto/f_auto/v1781124774/Dil_Kaa_Jo_Haal_Hai_Besharam_320_Kbps_delwvm.mp3",
-    cover: "https://res.cloudinary.com/dofcnmza8/image/upload/q_auto/f_auto/v1781276347/kanne_kanmaniye_caulrw.jpg"
   }
 ];
 
