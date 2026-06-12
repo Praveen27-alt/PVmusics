@@ -80,6 +80,34 @@ const SONGS = [
     artist: "PVmusic",
     src: "https://res.cloudinary.com/dofcnmza8/video/upload/q_auto/f_auto/v1781088304/Naanga_Naalu_Peru_j1t0j1.mp3",
     cover: "https://res.cloudinary.com/dofcnmza8/image/upload/q_auto/f_auto/v1781117328/nalluparu_zjbu2e.jpg"
+  },
+  {
+    id: 12,
+    title: "Minnalvala",
+    artist: "PVmusic",
+    src: "https://res.cloudinary.com/dofcnmza8/video/upload/q_auto/f_auto/v1781275961/Minnalvala_kp1vam.mp3",
+    cover: "https://res.cloudinary.com/dofcnmza8/image/upload/q_auto/f_auto/v1781276357/minnalvala_abnart.jpg"
+  },
+  {
+    id: 13,
+    title: "Pavazha Malli",
+    artist: "PVmusic",
+    src: "https://res.cloudinary.com/dofcnmza8/video/upload/q_auto/f_auto/v1781275972/Pavazha_Malli_tu5wga.mp3",
+    cover: "https://res.cloudinary.com/dofcnmza8/image/upload/q_auto/f_auto/v1781276372/pavazha_malli_ldlys2.jpg"
+  },
+  {
+    id: 14,
+    title: "Kanne Kanmaniye",
+    artist: "PVmusic",
+    src: "https://res.cloudinary.com/dofcnmza8/video/upload/q_auto/f_auto/v1781275991/Kannae_Kanmaniye_ztz6th.mp3",
+    cover: "https://res.cloudinary.com/dofcnmza8/image/upload/q_auto/f_auto/v1781276347/kanne_kanmaniye_caulrw.jpg"
+  },
+  {
+    id: 15,
+    title: "Aaya Sher",
+    artist: "PVmusic",
+    src: "https://res.cloudinary.com/dofcnmza8/video/upload/q_auto/f_auto/v1781275980/Aaya_Sher_y13jmu.mp3",
+    cover: "https://res.cloudinary.com/dofcnmza8/image/upload/q_auto/f_auto/v1781276335/aayasher_ynnhey.jpg"
   }
 ];
 
@@ -342,8 +370,8 @@ function renderSongCard(song) {
   card.className = `song-card${state.currentSong?.id === song.id ? ' playing' : ''}`;
   card.dataset.songId = song.id;
   card.innerHTML = `
-    <div class="song-card-image">
-      <img src="${song.cover}" alt="${song.title}" loading="lazy">
+    <div class="song-card-image song-card-art-wrap">
+      <img class="song-card-img" src="${song.cover}" alt="${song.title}" loading="lazy">
       <button class="song-card-play" title="Play">▶</button>
       <button class="song-card-like ${isLiked(song.id) ? 'liked' : ''}" title="Like" data-song-id="${song.id}">
         ${isLiked(song.id) ? '❤️' : '♡'}
@@ -353,13 +381,17 @@ function renderSongCard(song) {
     <div class="song-card-artist">${song.artist}</div>
   `;
 
-  // Play on card click
+  // Clicking anywhere on card (except like/play buttons) → plays song AND opens full-screen
   card.addEventListener('click', (e) => {
     if (e.target.closest('.song-card-like') || e.target.closest('.song-card-play')) return;
     playSong(song.id);
+    // Open full-screen Now Playing for any card click
+    setTimeout(() => {
+      if (window._openNowPlayingScreen) window._openNowPlayingScreen();
+    }, 100);
   });
 
-  // Play button
+  // Play button — plays but does NOT open full screen
   card.querySelector('.song-card-play').addEventListener('click', (e) => {
     e.stopPropagation();
     playSong(song.id);
@@ -1549,7 +1581,13 @@ if (dom.modalAddSong) {
 // Load Custom Songs from LocalStorage
 function loadCustomSongs() {
   try {
-    const custom = JSON.parse(localStorage.getItem('pvmusic_custom_songs') || '[]');
+    let custom = JSON.parse(localStorage.getItem('pvmusic_custom_songs') || '[]');
+
+    // Remove any banned/deleted songs from localStorage
+    const BANNED_TITLES = ['dil kaa jo haal hai'];
+    custom = custom.filter(s => !BANNED_TITLES.includes(s.title.toLowerCase()));
+    localStorage.setItem('pvmusic_custom_songs', JSON.stringify(custom));
+
     custom.forEach(song => {
       if (!SONGS.some(s => s.id === song.id)) {
         SONGS.push(song);
@@ -1580,7 +1618,225 @@ function init() {
   // Set initial volume UI
   dom.volumeFill.style.width = (state.volume * 100) + '%';
 
+  // Initialize Now Playing Screen
+  initNowPlayingScreen();
+
   console.log(`🎵 PVmusic initialized — ${SONGS.length} tracks loaded`);
 }
 
 init();
+
+// ═══════════════════════════════════════════
+// FULL-SCREEN NOW PLAYING SCREEN
+// ═══════════════════════════════════════════
+function initNowPlayingScreen() {
+  const screen          = document.getElementById('now-playing-screen');
+  const npsArtwork      = document.getElementById('nps-artwork');
+  const npsArtImg       = document.getElementById('nps-art-img');
+  const npsBg           = document.getElementById('nps-bg');
+  const npsTitle        = document.getElementById('nps-title');
+  const npsArtist       = document.getElementById('nps-artist');
+  const npsLikeBtn      = document.getElementById('nps-like-btn');
+  const npsCurrent      = document.getElementById('nps-current-time');
+  const npsTotal        = document.getElementById('nps-total-time');
+  const npsProgressBar  = document.getElementById('nps-progress-bar');
+  const npsProgressFill = document.getElementById('nps-progress-fill');
+  const npsProgressThumb= document.getElementById('nps-progress-thumb');
+  const npsVolBar       = document.getElementById('nps-vol-bar');
+  const npsVolFill      = document.getElementById('nps-vol-fill');
+
+  const npsBtnClose   = document.getElementById('nps-btn-close');
+  const npsBtnPlay    = document.getElementById('nps-btn-play-pause');
+  const npsBtnPrev    = document.getElementById('nps-btn-prev');
+  const npsBtnNext    = document.getElementById('nps-btn-next');
+  const npsBtnShuffle = document.getElementById('nps-btn-shuffle');
+  const npsBtnRepeat  = document.getElementById('nps-btn-repeat');
+  const npsBtnVolIcon = document.getElementById('nps-btn-volume-icon');
+  const npsBtnQueue   = document.getElementById('nps-btn-queue');
+
+  let isNpsOpen = false;
+
+  // ── Open / Close ──────────────────────────
+  function openNPS() {
+    isNpsOpen = true;
+    screen.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    updateNPSUI();
+  }
+
+  function closeNPS() {
+    isNpsOpen = false;
+    screen.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  // Expose globally so renderSongCard can call it
+  window._openNowPlayingScreen = openNPS;
+
+  // Close button
+  npsBtnClose.addEventListener('click', closeNPS);
+
+  // Click on bottom player album art → open NPS
+  dom.playerAlbumArt.style.cursor = 'pointer';
+  dom.playerArtImg.style.cursor   = 'pointer';
+  dom.playerAlbumArt.addEventListener('click', () => {
+    if (state.currentSong) openNPS();
+  });
+
+  // ── Sync all NPS UI from state ────────────
+  function updateNPSUI() {
+    if (!state.currentSong) return;
+    const song = state.currentSong;
+
+    npsBg.style.backgroundImage = `url('${song.cover}')`;
+    npsArtImg.src   = song.cover;
+    npsArtImg.alt   = song.title;
+    npsTitle.textContent  = song.title;
+    npsArtist.textContent = song.artist;
+
+    npsBtnPlay.textContent = state.isPlaying ? '⏸' : '▶';
+    npsArtwork.classList.toggle('playing', state.isPlaying);
+
+    const liked = isLiked(song.id);
+    npsLikeBtn.textContent = liked ? '❤️' : '♡';
+    npsLikeBtn.classList.toggle('liked', liked);
+
+    npsBtnShuffle.classList.toggle('active', state.shuffle);
+    npsBtnRepeat.classList.toggle('active', state.repeat !== 'off');
+    npsBtnRepeat.textContent = state.repeat === 'one' ? '🔂' : '🔁';
+
+    npsVolFill.style.width = (state.volume * 100) + '%';
+    updateNpsVolumeIcon();
+
+    if (audio.duration) {
+      npsTotal.textContent = formatTime(audio.duration);
+      const pct = (audio.currentTime / audio.duration) * 100;
+      npsProgressFill.style.width = pct + '%';
+      npsCurrent.textContent = formatTime(audio.currentTime);
+    }
+  }
+
+  function updateNpsVolumeIcon() {
+    if (state.isMuted || state.volume === 0)  npsBtnVolIcon.textContent = '🔇';
+    else if (state.volume < 0.5)              npsBtnVolIcon.textContent = '🔉';
+    else                                      npsBtnVolIcon.textContent = '🔊';
+  }
+
+  // ── Progress sync ─────────────────────────
+  audio.addEventListener('timeupdate', () => {
+    if (!isNpsOpen || !audio.duration) return;
+    const pct = (audio.currentTime / audio.duration) * 100;
+    npsProgressFill.style.width = pct + '%';
+    npsCurrent.textContent = formatTime(audio.currentTime);
+  });
+
+  audio.addEventListener('loadedmetadata', () => {
+    if (!isNpsOpen) return;
+    npsTotal.textContent = formatTime(audio.duration);
+  });
+
+  // ── Progress drag ─────────────────────────
+  let draggingNps = false;
+
+  function setNpsProgress(e) {
+    if (!audio.duration) return;
+    const rect = npsProgressBar.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    let pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    audio.currentTime = pct * audio.duration;
+    npsProgressFill.style.width = (pct * 100) + '%';
+  }
+
+  npsProgressBar.addEventListener('click', setNpsProgress);
+  npsProgressBar.addEventListener('mousedown',  (e) => { draggingNps = true; setNpsProgress(e); });
+  npsProgressBar.addEventListener('touchstart', (e) => { draggingNps = true; setNpsProgress(e); }, { passive: true });
+  document.addEventListener('mousemove', (e) => { if (draggingNps) setNpsProgress(e); });
+  document.addEventListener('touchmove', (e) => { if (draggingNps) setNpsProgress(e); }, { passive: true });
+  document.addEventListener('mouseup',  () => { draggingNps = false; });
+  document.addEventListener('touchend', () => { draggingNps = false; });
+
+  // ── Volume drag ───────────────────────────
+  let draggingVol = false;
+
+  function setNpsVolume(e) {
+    const rect = npsVolBar.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    setVolume(pct);
+    npsVolFill.style.width = (pct * 100) + '%';
+    updateNpsVolumeIcon();
+  }
+
+  npsVolBar.addEventListener('click', setNpsVolume);
+  npsVolBar.addEventListener('mousedown',  (e) => { draggingVol = true; setNpsVolume(e); });
+  npsVolBar.addEventListener('touchstart', (e) => { draggingVol = true; setNpsVolume(e); }, { passive: true });
+  document.addEventListener('mousemove', (e) => { if (draggingVol) setNpsVolume(e); });
+  document.addEventListener('touchmove', (e) => { if (draggingVol) setNpsVolume(e); }, { passive: true });
+  document.addEventListener('mouseup',  () => { draggingVol = false; });
+  document.addEventListener('touchend', () => { draggingVol = false; });
+
+  // ── Mute toggle ───────────────────────────
+  npsBtnVolIcon.addEventListener('click', () => {
+    if (state.isMuted) {
+      setVolume(state.previousVolume || 0.8);
+      state.isMuted = false;
+    } else {
+      state.previousVolume = state.volume;
+      setVolume(0);
+      state.isMuted = true;
+    }
+    npsVolFill.style.width = (state.volume * 100) + '%';
+    updateNpsVolumeIcon();
+  });
+
+  // ── Playback controls ─────────────────────
+  npsBtnPlay.addEventListener('click', () => {
+    togglePlayPause();
+    npsBtnPlay.textContent = state.isPlaying ? '⏸' : '▶';
+    npsArtwork.classList.toggle('playing', state.isPlaying);
+  });
+
+  npsBtnPrev.addEventListener('click', () => { playPrev(); setTimeout(updateNPSUI, 80); });
+  npsBtnNext.addEventListener('click', () => { playNext(); setTimeout(updateNPSUI, 80); });
+
+  npsBtnShuffle.addEventListener('click', () => {
+    toggleShuffle();
+    npsBtnShuffle.classList.toggle('active', state.shuffle);
+  });
+
+  npsBtnRepeat.addEventListener('click', () => {
+    toggleRepeat();
+    npsBtnRepeat.classList.toggle('active', state.repeat !== 'off');
+    npsBtnRepeat.textContent = state.repeat === 'one' ? '🔂' : '🔁';
+  });
+
+  npsLikeBtn.addEventListener('click', () => {
+    if (state.currentSong) {
+      toggleLike(state.currentSong.id);
+      const liked = isLiked(state.currentSong.id);
+      npsLikeBtn.textContent = liked ? '❤️' : '♡';
+      npsLikeBtn.classList.toggle('liked', liked);
+    }
+  });
+
+  npsBtnQueue.addEventListener('click', () => {
+    closeNPS();
+    dom.queuePanel.classList.add('open');
+    dom.btnQueueToggle.classList.add('active');
+  });
+
+  // ── Swipe-down to close (mobile) ──────────
+  let touchStartY = 0;
+  screen.addEventListener('touchstart', (e) => {
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  screen.addEventListener('touchend', (e) => {
+    const delta = e.changedTouches[0].clientY - touchStartY;
+    if (delta > 80) closeNPS();
+  }, { passive: true });
+
+  // ── Refresh NPS when song changes ─────────
+  audio.addEventListener('play',  () => { if (isNpsOpen) updateNPSUI(); });
+  audio.addEventListener('pause', () => { if (isNpsOpen) updateNPSUI(); });
+}
