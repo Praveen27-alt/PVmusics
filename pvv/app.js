@@ -1581,7 +1581,13 @@ if (dom.modalAddSong) {
 // Load Custom Songs from LocalStorage
 function loadCustomSongs() {
   try {
-    const custom = JSON.parse(localStorage.getItem('pvmusic_custom_songs') || '[]');
+    let custom = JSON.parse(localStorage.getItem('pvmusic_custom_songs') || '[]');
+
+    // Remove any banned/deleted songs from localStorage
+    const BANNED_TITLES = ['dil kaa jo haal hai'];
+    custom = custom.filter(s => !BANNED_TITLES.includes(s.title.toLowerCase()));
+    localStorage.setItem('pvmusic_custom_songs', JSON.stringify(custom));
+
     custom.forEach(song => {
       if (!SONGS.some(s => s.id === song.id)) {
         SONGS.push(song);
